@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>We'll Be Right Back</title>
   <meta name="theme-color" content="#247182" />
-  <link rel="icon" href="https://cdn.glitch.global/e4de5d14-3ef6-4ed4-b41e-1647325d8269/icon-192x192.png" />
+  <link rel="icon" href="logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+  <script src="../config/2025.js"></script>
   <style>
     body {
       margin: 0;
@@ -44,13 +45,13 @@
       transform: scale(1.05);
     }
 
-    h1 {
+    #headline {
       font-size: 1.9rem;
       color: #247182;
       margin-bottom: 0.5rem;
     }
 
-    p {
+    #body-text {
       font-size: 1rem;
       line-height: 1.5;
       color: #444;
@@ -62,21 +63,15 @@
       color: #888;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* --- Status Widget Design (copied from your upload) --- */
     .status-widget {
       width: 100%;
       padding: 20px;
       box-sizing: border-box;
       text-align: center;
       font-size: 1.1em;
-      border-radius: 6px;
+      border-radius: 12px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-      max-width: 800px;
+      max-width: 480px;
       margin: 20px auto;
       position: relative;
       min-height: 140px;
@@ -119,6 +114,12 @@
     .message { font-size: 1.2em; font-weight: 600; margin-top: 8px; }
     .component { font-size: 1em; opacity: 0.85; margin-top: 4px; }
     .timestamp { font-size: 0.8em; opacity: 0.7; margin-top: 8px; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     @media (max-width: 600px) {
       .status-widget { padding: 24px; min-height: 160px; }
       .message { font-size: 1.1em; }
@@ -129,69 +130,77 @@
 </head>
 <body>
   <div class="container">
-    <img src="https://cdn.glitch.global/e4de5d14-3ef6-4ed4-b41e-1647325d8269/icon-192x192.png" alt="Reading Challenge Logo" class="logo" />
-    <h1>We'll Be Right Back</h1>
-    <p>Our 2025 Reading Challenge website is currently undergoing maintenance or experiencing a temporary outage.</p>
-    <p>We’re working to resolve this quickly. Thanks for your patience!</p>
-    <p class="small">Need help? <a href="mailto:support@readingchallenge.online">support@readingchallenge.online</a></p>
+    <img id="logo" class="logo" />
+    <h1 id="headline"></h1>
+    <p id="body-text"></p>
+    <p class="small">Need help? <a id="contact-link" href="#">Contact Support</a></p>
   </div>
 
   <script>
-    const CONFIG = {
-      autoHideAfterDays: 2,
-      statusPageUrl: 'https://readingchallenge.statuspage.io',
-      showOperational: true,
-      showTimestamp: true,
-      hideTimestampOnIncident: true,
-      trackedComponents: ["2025 Reading Challenge"],
-      refreshInterval: 90000
-    };
+    const config = window.MAINTENANCE_CONFIG;
+    document.getElementById("headline").textContent = config.messageHeadline;
+    document.getElementById("body-text").textContent = config.messageBody;
+    document.getElementById("contact-link").href = `mailto:${config.contactEmail}`;
+    document.getElementById("contact-link").textContent = config.contactEmail;
+    document.getElementById("logo").src = config.logoSrc;
 
-    function createStatusWidget() {
+    const widget = (() => {
       const status = document.createElement('div');
       status.className = 'status-widget loading';
       const externalBtn = document.createElement('div');
       externalBtn.className = 'icon-btn external-btn';
       externalBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
-      externalBtn.onclick = (e) => { e.stopPropagation(); window.open(CONFIG.statusPageUrl, '_blank'); };
+      externalBtn.onclick = (e) => { e.stopPropagation(); window.open(config.statusConfig.statusPageUrl, '_blank'); };
       const extTooltip = document.createElement('div');
       extTooltip.className = 'tooltip more-info';
       extTooltip.innerText = 'More Info';
       externalBtn.appendChild(extTooltip);
+
       const message = document.createElement('div');
       message.className = 'message';
       message.innerText = 'Loading status...';
+
       const component = document.createElement('div');
       component.className = 'component';
-      component.innerText = '';
+
       const timestamp = document.createElement('div');
       timestamp.className = 'timestamp';
-      timestamp.innerText = '';
+
       status.append(externalBtn, message, component, timestamp);
       document.body.appendChild(status);
       setTimeout(() => status.classList.add('loaded'), 50);
-      return { status, message, component, timestamp };
-    }
 
-    const widget = createStatusWidget();
+      return { status, message, component, timestamp };
+    })();
 
     async function loadStatus() {
       const now = new Date();
       let affectedComponents = [];
       let latestUpdateTime = null;
+
       try {
-        const incidentResponse = await fetch('https://readingchallenge.statuspage.io/api/v2/incidents.json');
-        const incidents = (await incidentResponse.json()).incidents || [];
-        if (incidents.length > 0) latestUpdateTime = new Date(incidents[0].updated_at);
-        const componentsResponse = await fetch('https://readingchallenge.statuspage.io/api/v2/components.json');
-        const components = (await componentsResponse.json()).components || [];
+        const [incidentsRes, componentsRes] = await Promise.all([
+          fetch(`${config.statusConfig.statusPageUrl}/api/v2/incidents.json`),
+          fetch(`${config.statusConfig.statusPageUrl}/api/v2/components.json`)
+        ]);
+        const incidents = (await incidentsRes.json()).incidents || [];
+        const components = (await componentsRes.json()).components || [];
+
+        if (incidents.length > 0) {
+          latestUpdateTime = new Date(incidents[0].updated_at);
+        }
+
         components.forEach(comp => {
-          if (CONFIG.trackedComponents.includes(comp.name) && comp.status !== "operational") {
+          if (config.statusConfig.trackedComponents.includes(comp.name) && comp.status !== "operational") {
             affectedComponents.push(comp.name);
           }
         });
 
-        if (affectedComponents.length === 0 && latestUpdateTime && (now - latestUpdateTime) / (1000 * 60 * 60 * 24) >= CONFIG.autoHideAfterDays) {
+        if (
+          affectedComponents.length === 0 &&
+          latestUpdateTime &&
+          (now - latestUpdateTime) / (1000 * 60 * 60 * 24) >= config.statusConfig.autoHideAfterDays
+        ) {
           widget.status.style.display = 'none';
           return;
         }
@@ -209,7 +218,7 @@
           widget.component.innerText = affectedName;
         }
 
-        if (CONFIG.showTimestamp) {
+        if (config.statusConfig.showTimestamp) {
           widget.timestamp.innerText = "Last Updated: " + now.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
         }
       } catch (e) {
@@ -219,7 +228,7 @@
     }
 
     loadStatus();
-    setInterval(loadStatus, CONFIG.refreshInterval);
+    setInterval(loadStatus, config.statusConfig.refreshInterval);
   </script>
 </body>
 </html>
