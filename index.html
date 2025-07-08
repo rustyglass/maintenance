@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="https://cdn.glitch.global/e4de5d14-3ef6-4ed4-b41e-1647325d8269/icon-192x192.png" />
   <style>
     body {
       margin: 0;
@@ -18,8 +19,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
       text-align: center;
+      flex-direction: column;
     }
 
     .container {
@@ -29,6 +31,7 @@
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
       max-width: 480px;
       width: 90%;
+      margin-bottom: 2rem;
       animation: fadeIn 0.6s ease;
     }
 
@@ -62,6 +65,11 @@
       color: #888;
     }
 
+    #status-widget-container {
+      max-width: 600px;
+      width: 90%;
+    }
+
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -77,13 +85,18 @@
 <body>
   <div class="container">
     <img
-      src="https://cdn.glitch.global/e4de5d14-3ef6-4ed4-b41e-1647325d8269/icon-192x192.png?v=1717621231338"
+      src="https://cdn.glitch.global/e4de5d14-3ef6-4ed4-b41e-1647325d8269/icon-192x192.png"
       alt="Reading Challenge Logo"
       class="logo"
     />
     <h1>We'll Be Right Back</h1>
-    <p>Our site is currently undergoing maintenance or experiencing a brief outage.<br />We appreciate your patience and will return shortly!</p>
-    <div class="small">© 2025 Reading Challenge</div>
+    <p>Our 2025 Reading Challenge website is currently undergoing maintenance or experiencing a temporary outage.</p>
+    <p>We’re working to resolve this quickly. Thanks for your patience!</p>
+    <p class="small">Need help? <a href="mailto:support@readingchallenge.online">support@readingchallenge.online</a></p>
   </div>
+
+  <div id="status-widget-container"></div>
+
+  <script src="https://status.readingchallenge.io/widget-2025.js" async defer></script>
 </body>
 </html>
