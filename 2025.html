@@ -62,6 +62,12 @@
       color: #444;
     }
 
+    #eta-text {
+      font-size: 0.95rem;
+      color: #666;
+      margin-top: 0.75rem;
+    }
+
     .small {
       margin-top: 1rem;
       font-size: 0.85rem;
@@ -82,7 +88,12 @@
       min-height: 140px;
       opacity: 0;
       transform: translateY(10px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
+      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    .status-widget:hover {
+      transform: scale(1.015);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
     }
 
     .status-widget.loaded { opacity: 1; transform: translateY(0); }
@@ -138,6 +149,7 @@
     <img id="logo" class="logo" />
     <h1 id="headline"></h1>
     <p id="body-text"></p>
+    <p id="eta-text" style="display: none;"></p>
     <p class="small">Need help? <a id="contact-link" href="#">Contact Support</a></p>
   </div>
 
@@ -148,6 +160,12 @@
     document.getElementById("contact-link").href = `mailto:${config.contactEmail}`;
     document.getElementById("contact-link").textContent = config.contactEmail;
     document.getElementById("logo").src = config.logoSrc;
+
+    if (config.showETA && config.etaTime) {
+      const etaText = document.getElementById("eta-text");
+      etaText.textContent = `Estimated return: ${config.etaTime}`;
+      etaText.style.display = 'block';
+    }
 
     const widget = (() => {
       const status = document.createElement('div');
