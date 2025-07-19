@@ -6,7 +6,7 @@ window.MAINTENANCE_CONFIG = {
 
   // ✅ NEW ETA SUPPORT
   showETA: true,
-  etaTime: "6:00 PM CST",
+  etaTime: "9:15 PM CST",
 
   statusConfig: {
     trackedComponents: ["2025 Summer Reading Challenge"],
