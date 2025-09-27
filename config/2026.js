@@ -1,6 +1,6 @@
 window.MAINTENANCE_CONFIG = {
   messageHeadline: "We'll Be Right Back",
-  messageBody: "Our 2026 Reading Challenge is currently being worked on to finalize some fine details. It will be back online shortly!",
+  messageBody: "We are applying some finishing touches to our 2026 Reading Challenge website. It will be back online shortly!",
   contactEmail: "support@readingchallenge.online",
   logoSrc: "2026 Reading Challenge iOS Icon.png", // Make sure this matches the file uploaded
 
