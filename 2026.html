@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>We'll Be Right Back</title>
+  <meta name="theme-color" content="#247182" />
+  <link rel="icon" href="logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet" />
+  <script src="../config/2026.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Raleway', sans-serif;
+      background-color: #f0f4f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    .bubble {
+      background: white;
+      padding: 2rem 2.5rem;
+      border-radius: 24px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+      max-width: 540px;
+      width: 90%;
+      margin-top: 2rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .bubble:hover {
+      transform: scale(1.015);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    }
+
+    .logo {
+      width: 72px;
+      height: 72px;
+      margin-bottom: 1rem;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    #headline {
+      font-size: 1.9rem;
+      color: #f27c22;
+      margin-bottom: 0.5rem;
+    }
+
+    #body-text {
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #444;
+    }
+
+    #eta-text {
+      font-size: 0.95rem;
+      color: #666;
+      margin-top: 0.75rem;
+    }
+
+    .small {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .status-widget {
+      width: 100%;
+      padding: 24px;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 1.1em;
+      border-radius: 24px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+      max-width: 540px;
+      margin: 20px auto;
+      position: relative;
+      min-height: 140px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    .status-widget:hover {
+      transform: scale(1.015);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    }
+
+    .status-widget.loaded { opacity: 1; transform: translateY(0); }
+    .major_outage { background-color: red; color: white; }
+    .partial_outage { background-color: orange; color: white; }
+    .degraded_performance { background-color: #FF8C00; color: white; }
+    .maintenance, .under_maintenance, .planned_maintenance { background-color: #0066cc; color: white; }
+    .operational { background-color: green; color: white; }
+    .multiple_affected { background-color: purple; color: white; }
+    .loading { background-color: white; color: black; border: 1px solid #ccc; }
+
+    .icon-btn {
+      position: absolute;
+      opacity: 0.75;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .icon-btn:hover { opacity: 1; transform: scale(1.1); }
+    .external-btn { top: 8px; right: 12px; width: 26px; height: 26px; }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(0,0,0,0.75);
+      color: white;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 100;
+    }
+
+    .icon-btn:hover .tooltip { opacity: 1; }
+    .tooltip.more-info { top: -24px; right: 0; }
+    .message { font-size: 1.2em; font-weight: 600; margin-top: 8px; }
+    .component { font-size: 1em; opacity: 0.85; margin-top: 4px; }
+    .timestamp { font-size: 0.8em; opacity: 0.7; margin-top: 8px; }
+
+    @media (max-width: 600px) {
+      .status-widget { padding: 24px; min-height: 160px; }
+      .message { font-size: 1.1em; }
+      .component { font-size: 0.95em; }
+      .timestamp { font-size: 0.75em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bubble">
+    <img id="logo" class="logo" />
+    <h1 id="headline"></h1>
+    <p id="body-text"></p>
+    <p id="eta-text" style="display: none;"></p>
+    <p class="small">Need help? <a id="contact-link" href="#">Contact Support</a></p>
+  </div>
+
+  <script>
+    const config = window.MAINTENANCE_CONFIG;
+    document.getElementById("headline").textContent = config.messageHeadline;
+    document.getElementById("body-text").textContent = config.messageBody;
+    document.getElementById("contact-link").href = `mailto:${config.contactEmail}`;
+    document.getElementById("contact-link").textContent = config.contactEmail;
+    document.getElementById("logo").src = config.logoSrc;
+
+    if (config.showETA && config.etaTime) {
+      const etaText = document.getElementById("eta-text");
+      etaText.textContent = `Estimated return: ${config.etaTime}`;
+      etaText.style.display = 'block';
+    }
+
+    const widget = (() => {
+      const status = document.createElement('div');
+      status.className = 'status-widget loading';
+      const externalBtn = document.createElement('div');
+      externalBtn.className = 'icon-btn external-btn';
+      externalBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
+      externalBtn.onclick = (e) => { e.stopPropagation(); window.open(config.statusConfig.statusPageUrl, '_blank'); };
+      const extTooltip = document.createElement('div');
+      extTooltip.className = 'tooltip more-info';
+      extTooltip.innerText = 'More Info';
+      externalBtn.appendChild(extTooltip);
+
+      const message = document.createElement('div');
+      message.className = 'message';
+      message.innerText = 'Loading status...';
+
+      const component = document.createElement('div');
+      component.className = 'component';
+
+      const timestamp = document.createElement('div');
+      timestamp.className = 'timestamp';
+
+      status.append(externalBtn, message, component, timestamp);
+      document.body.appendChild(status);
+      setTimeout(() => status.classList.add('loaded'), 50);
+
+      return { status, message, component, timestamp };
+    })();
+
+    async function loadStatus() {
+      const now = new Date();
+      let affectedComponents = [];
+      let latestUpdateTime = null;
+
+      try {
+        const [incidentsRes, componentsRes] = await Promise.all([
+          fetch(`${config.statusConfig.statusPageUrl}/api/v2/incidents.json`),
+          fetch(`${config.statusConfig.statusPageUrl}/api/v2/components.json`)
+        ]);
+        const incidents = (await incidentsRes.json()).incidents || [];
+        const components = (await componentsRes.json()).components || [];
+
+        if (incidents.length > 0) {
+          latestUpdateTime = new Date(incidents[0].updated_at);
+        }
+
+        components.forEach(comp => {
+          if (config.statusConfig.trackedComponents.includes(comp.name) && comp.status !== "operational") {
+            affectedComponents.push(comp.name);
+          }
+        });
+
+        if (
+          affectedComponents.length === 0 &&
+          latestUpdateTime &&
+          (now - latestUpdateTime) / (1000 * 60 * 60 * 24) >= config.statusConfig.autoHideAfterDays
+        ) {
+          widget.status.style.display = 'none';
+          return;
+        }
+
+        if (affectedComponents.length === 0) {
+          widget.status.className = 'status-widget operational loaded';
+          widget.message.innerText = "All Systems Operational";
+          widget.component.innerText = "";
+        } else {
+          const affectedName = affectedComponents[0];
+          const affectedComp = components.find(c => c.name === affectedName);
+          if (!affectedComp) return;
+          widget.status.className = 'status-widget ' + affectedComp.status + ' loaded';
+          widget.message.innerText = affectedComp.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          widget.component.innerText = affectedName;
+        }
+
+        if (config.statusConfig.showTimestamp) {
+          widget.timestamp.innerText = "Last Updated: " + now.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+        }
+      } catch (e) {
+        console.error("Error loading status", e);
+        widget.message.innerText = "Error loading status.";
+      }
+    }
+
+    loadStatus();
+    setInterval(loadStatus, config.statusConfig.refreshInterval);
+  </script>
+</body>
+</html>
