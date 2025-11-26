@@ -1,12 +1,12 @@
 window.MAINTENANCE_CONFIG = {
   messageHeadline: "We'll Be Right Back",
-  messageBody: "The scheduled maintenance on the 2025 Reading Challenge website has experienced delays and has unveiled design issues at last minute. Thanks for your patience!",
+  messageBody: "We're currently working on the website right now to bring new features and improve on existing ones. Thank you for your patience!",
   contactEmail: "support@readingchallenge.online",
-  logoSrc: "config/2025 Reading Challenge - 512 x 512.png", // Make sure this matches the file you uploaded
+  logoSrc: "config/2025 Reading Challenge - 512 x 512.png",
 
   // ✅ NEW ETA SUPPORT
   showETA: true,
-  etaTime: "11-23-2025 by 9:00 PM CST",
+  etaTime: "9:00 PM CST",
 
   statusConfig: {
     trackedComponents: ["2025 Reading Challenge"],
